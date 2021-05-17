@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from pandas import DataFrame
 
 # dna = pd.read_csv('C:/Users/fader/Desktop/clustering/codon_usage.csv')
-dna = pd.read_csv('/Users/emisonlu/Desktop/codon_usage.csv')
+dna = pd.read_csv('codon_usage.csv')
 
 print(dna['Kingdom'].value_counts())
 print(dna)
