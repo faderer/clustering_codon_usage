@@ -69,6 +69,7 @@ dna.drop(columns=['DNAtype','SpeciesID','Ncodons','SpeciesName'],inplace=True)
 
 ```python
 from sklearn.utils import shuffle
+
 dna = shuffle(dna)
 for i in range(1, 11):
     data = dna[1302*(i-1) : 1302*i - 1]
@@ -177,9 +178,147 @@ k = 5
 centroids, clusterAssment = kmeans(dataSet, k)
 ```
 
-以上的kmeans算法为我们自己的实现，为了更好地进行聚类处理，并采用交叉验证的方式选择最合适的k值，我们选择使用sklearn封装的函数，进行聚类分析。
+以上的kmeans算法为我们自己的实现，为了更好地进行聚类处理，并采用交叉验证的方式选择最合适的k值，我们选择使用sklearn封装的函数，进行聚类分析。由于数据集中的物种一共有11种类别，而占大多数的物种一共是5种类别，因此，我们将k值的范围取于2-15之间。
 
-由于数据集中的物种一共有11种类别，而占大多数的物种一共是5种类别，因此，我们将k值的范围取于5-11之间。
+在预处理阶段，我们将原始数据打乱后等分为10份，并存储于文件data1.csv、data2.csv、...、data10.csv中，依次将每一个文件作为测试集，而将剩余的文件作为训练集。使用训练集得到k个中心点后，对于测试集中的每个点，找到最近的质心并计算平方距离，对所有距离平方求和，从而以此度量测试集与训练集的匹配程度。用于计算距离的函数如下所示。
 
+```python
+def distance(vector1, vector2):
+	return sqrt(sum(power(vector2 - vector1, 2)))
+```
 
+用于训练模型并进行交叉验证的函数如下所示，传入的参数为预设的k，返回的参数为该k下由测试集得到的平方距离之和。
+
+```python
+def crossValidation(k):
+    dis = 0
+    # ”i“ is the serial number of the test set file
+    for i in range(1, 11):
+      	
+        # Read 9 training set data and merge them
+        frames = []
+        for j in range(1, i):
+            frames.append(pd.read_csv('data' + str(j) + '.csv'))
+        for j in range(i + 1, 11):
+            frames.append(pd.read_csv('data' + str(j) + '.csv'))
+        data = pd.concat(frames)
+        data = data.iloc[:,1:].astype(float)
+
+        # Use the training set data to train the model and get k center points
+        km = KMeans(n_clusters = k)
+        km.fit(data)
+        centroids = km.cluster_centers_
+        centroids = mat(centroids)
+
+        # Read the test set file and preprocess it
+        test_data = pd.read_csv('data' + str(i) + '.csv')
+        test_data = test_data.iloc[:,1:].astype(float)
+        test_data = mat(test_data.values)
+
+        # Traverse each piece of data in the test set，
+        # find the nearest center point,
+        # and calculate the distance to the center point
+        for j in range(test_data.shape[0]):
+            mindis = distance(test_data[j,:], centroids[0,:])
+            for s in range(1, k):
+                tempdis = distance(test_data[j,:], centroids[s,:])
+                if tempdis < mindis:
+                    mindis = tempdis
+            dis = dis + mindis
+
+    return dis
+```
+
+对于在2-15之间的k值进行训练并得到结果，存入result中。
+
+```python
+result = []
+for k in range(1, 20):
+    result.append(crossValidation(k))
+```
+
+result的值如下。
+
+```
+[979.9220033219156, 840.0359367568631, 780.3162718811334, 754.1063384347027, 729.326710204803, 712.9507023062117, 700.7368847749849, 689.6832799852417, 680.3279737649718, 670.5916235268745, 662.7421901489748, 658.3233900475436, 652.8469545073006, 648.5861169224315]
+```
+
+使用matplotlib进行作图，得到不同k下的距离平方和关系。
+
+```python
+import matplotlib.pyplot as plt
+
+x = [2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+y = result
+plt.plot(x, y)
+plt.title('The sum of squared distances under different values of k')
+plt.xlabel('k')
+plt.ylabel('the sum of squared distances')
+plt.show()
+```
+
+<img src="image/img1.png" alt="img1" style="zoom:35%;" />
+
+由上图可见，当k≥8时，平方距离和已趋近平稳。因此，我们将k值选为8。至此，我们不再区分训练集与测试集，而是对所有数据进行聚类分析。
+
+```python
+centroids, clusterAssment = kmeans(dataSet, k, dis_standard)
+clusterResultCount(clusterAssment)
+```
+
+其中，函数clusterResultCount()用于展现每一个聚类中，各种物种的数量。
+
+```python
+def clusterResultCount(clusterAssment):
+	result = pd.DataFrame(clusterAssment)
+	result.columns = ['class','rate']
+	classed = pd.concat([dna,result],axis=1)
+	compare = classed[['Kingdom','class']]
+  
+  # A total of 8 categories
+	class0 = compare[compare['class']==0]
+	class1 = compare[compare['class']==1]
+	class2 = compare[compare['class']==2]
+	class3 = compare[compare['class']==3]
+	class4 = compare[compare['class']==4]
+	class5 = compare[compare['class']==5]
+	class6 = compare[compare['class']==6]
+	class7 = compare[compare['class']==7]
+
+	cluster = [class0,class1,class2,class3,class4,class5,class6,class7]
+
+  # Count the number of 11 organisms in each cluster
+	verify = []
+	for c in cluster:
+		vrl = len(c[c['Kingdom']=='vrl'])
+		bct = len(c[c['Kingdom']=='bct'])
+		pln = len(c[c['Kingdom']=='pln'])
+		vrt = len(c[c['Kingdom']=='vrt'])
+		inv = len(c[c['Kingdom']=='inv'])
+		mam = len(c[c['Kingdom']=='mam'])
+		phg = len(c[c['Kingdom']=='phg'])
+		rod = len(c[c['Kingdom']=='rod'])
+		pri = len(c[c['Kingdom']=='pri'])
+		arc = len(c[c['Kingdom']=='arc'])
+		plm = len(c[c['Kingdom']=='plm'])
+		verify.append([vrl,bct,pln,vrt,inv,mam,phg,rod,pri,arc,plm])
+	answer = pd.DataFrame(verify)
+	answer.columns = ['vrl','bct','pln','vrt','inv','mam','phg','rod','pri','arc','plm']
+  
+  print(answer)
+```
+
+得到的结果如下所示，每一行为一个聚类，每一列为该物种类别在某一聚类中出现的次数。
+
+```
+    vrl  bct  pln   vrt  inv  mam  phg  rod  pri  arc  plm
+0   808   87  572   207  330   38   27   27   21   21    0
+1     2    0    3  1551   31  465    0  156   97    0    0
+2    36  620   11     4   28    0   56    0    0    2   15
+3     2   10  468    46  376    5    0    0    0    0    0
+4   188   55  388   214  194   63    2   31   58   26    0
+5  1458  363  570    51  259    0   86    0    2   33    0
+6    30  905   51     3   15    1    6    0    1   15    2
+7   307  879  460     1  112    0   43    1    1   29    1
+```
 

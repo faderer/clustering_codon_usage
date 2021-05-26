@@ -167,8 +167,11 @@ def clusterResultCount(clusterAssment):
 	class2 = compare[compare['class']==2]
 	class3 = compare[compare['class']==3]
 	class4 = compare[compare['class']==4]
+	class5 = compare[compare['class']==5]
+	class6 = compare[compare['class']==6]
+	class7 = compare[compare['class']==7]
 
-	cluster = [class0,class1,class2,class3,class4]
+	cluster = [class0,class1,class2,class3,class4,class5,class6,class7]
 
 	verify = []
 	for c in cluster:
@@ -177,9 +180,15 @@ def clusterResultCount(clusterAssment):
 		pln = len(c[c['Kingdom']=='pln'])
 		vrt = len(c[c['Kingdom']=='vrt'])
 		inv = len(c[c['Kingdom']=='inv'])
-		verify.append([vrl,bct,pln,vrt,inv])
+		mam = len(c[c['Kingdom']=='mam'])
+		phg = len(c[c['Kingdom']=='phg'])
+		rod = len(c[c['Kingdom']=='rod'])
+		pri = len(c[c['Kingdom']=='pri'])
+		arc = len(c[c['Kingdom']=='arc'])
+		plm = len(c[c['Kingdom']=='plm'])
+		verify.append([vrl,bct,pln,vrt,inv,mam,phg,rod,pri,arc,plm])
 	answer = pd.DataFrame(verify)
-	answer.columns = ['vrl','bct','pln','vrt','inv']
+	answer.columns = ['vrl','bct','pln','vrt','inv','mam','phg','rod','pri','arc','plm']
 
 	print(answer)
 
@@ -202,7 +211,7 @@ def clusterResultCount(clusterAssment):
 # showCluster(dataSet, k, centroids, clusterAssment)
 
 dataSet = mat(data.values)
-k = 5
+k = 8
 ## kmeans + euclDistance
 print("kmeans + euclDistance")
 dis_standard = 0
@@ -210,19 +219,19 @@ centroids, clusterAssment = kmeans(dataSet, k, dis_standard)
 clusterResultCount(clusterAssment)
 
 ## kmeans + euclDistance
-print("\nkmeans + manhattanDistance")
-dis_standard = 1
-centroids, clusterAssment = kmeans(dataSet, k, dis_standard)
-clusterResultCount(clusterAssment)
+# print("\nkmeans + manhattanDistance")
+# dis_standard = 1
+# centroids, clusterAssment = kmeans(dataSet, k, dis_standard)
+# clusterResultCount(clusterAssment)
 
 ## kmeans + euclDistance
-print("\nkmeans + cosineDistance")
-dis_standard = 2
-centroids, clusterAssment = kmeans(dataSet, k, dis_standard)
-clusterResultCount(clusterAssment)
+# print("\nkmeans + cosineDistance")
+# dis_standard = 2
+# centroids, clusterAssment = kmeans(dataSet, k, dis_standard)
+# clusterResultCount(clusterAssment)
 
 ## kmedians + euclDistance
-print("\kmedians + euclDistance")
-dis_standard = 0
-centroids, clusterAssment = kmedians(dataSet, k, dis_standard)
-clusterResultCount(clusterAssment)
+# print("\kmedians + euclDistance")
+# dis_standard = 0
+# centroids, clusterAssment = kmedians(dataSet, k, dis_standard)
+# clusterResultCount(clusterAssment)
