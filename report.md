@@ -80,7 +80,7 @@ for i in range(1, 11):
 
 若采用基于密度的方法进行聚类分析，比如DBSCAN算法，由于我们数据的维度过大，因此参数的选取非常困难。比如，DBSCAN用固定参数识别聚类，但当聚类的稀疏程度不同时，相同的判定标准可能会破坏聚类的自然结构，即较稀的聚类会被划分为多个类或密度较大且离得较近的类会被合并成一个聚类。
 
-若采用基于层次的方法进行聚类，比如BIRCH算法，一方面时间复杂度较高，另一方面，阈值threshold难以缺点，经过我们初步的测试，效果并不是非常理想。我们采用Python提供的机器学习库sklearn，对以上数据集进行了简单的聚类分析。
+若采用基于层次的方法进行聚类，比如BIRCH算法，一方面时间复杂度较高，另一方面，阈值threshold难以取得，经过我们初步的测试，效果并不是非常理想。我们采用Python提供的机器学习库sklearn，对以上数据集进行了简单的聚类分析。
 
 ```Python
 from sklearn.cluster import Birch
@@ -177,6 +177,7 @@ dataSet = mat(data.values)
 k = 5
 centroids, clusterAssment = kmeans(dataSet, k)
 ```
+
 
 以上的kmeans算法为我们自己的实现，为了更好地进行聚类处理，并采用交叉验证的方式选择最合适的k值，我们选择使用sklearn封装的函数，进行聚类分析。由于数据集中的物种一共有11种类别，而占大多数的物种一共是5种类别，因此，我们将k值的范围取于2-15之间。
 
@@ -321,4 +322,131 @@ def clusterResultCount(clusterAssment):
 6    30  905   51     3   15    1    6    0    1   15    2
 7   307  879  460     1  112    0   43    1    1   29    1
 ```
+## 4 聚类评估
+
+为了对我们聚类的结果做一个精准的评估，我们决定利用sklearn的Kmeans库和metrics库，对我们的聚类进行一个打分。
+```python
+from sklearn import metrics
+from sklearn.cluster import KMeans
+
+standard = []
+for i in range(2,10):
+    dataSet = mat(data.values)
+    centroids, clusterAssment = kmeans(dataSet, i)
+    Y = clusterAssment[:,0]
+    y_pred = KMeans(n_clusters=i, random_state=64).fit_predict(X)
+    standard.append([metrics.calinski_harabasz_score(X, y_pred),metrics.calinski_harabasz_score(X, Y)])
+```
+为了比较的准确性，我们令聚类数从2到10，并分别使用sklearn自带的kmeans聚类和我们自己写的聚类程序进行聚类，最后在使用metrics库中的calinski_harabasz_score进行打分，数据统计如下。
+```python
+[[3977.9119799523473, 3425.3029936486087],
+ [4922.0241313202705, 4920.774986066661],
+ [4546.097260577083, 4527.867143048459],
+ [3946.1489689222426, 3931.8039902148103],
+ [3526.6795910823707, 3494.0436272664565],
+ [3167.370274048748, 3027.9496535141284],
+ [2868.0847125022033, 2820.6672080376225],
+ [2619.1567802205545, 2603.3969073321023]]
+```
+使用echarts进行作图，得到标准kmeans和我们的kmeans分数对比图。
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ECharts</title>
+    <!-- 引入 echarts.js -->
+    <script src="echarts.min.js"></script>
+</head>
+<body>
+    <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+    <div id="main" style="width: 600px;height:400px;"></div>
+    <script type="text/javascript">
+    var chartDom = document.getElementById('main');
+    var myChart = echarts.init(chartDom);
+    var option;
+    var data = [[3977.9119799523473, 3425.3029936486087],
+    [4922.0241313202705, 4920.774986066661],
+    [4546.097260577083, 4527.867143048459],
+    [3946.1489689222426, 3931.8039902148103],
+    [3526.6795910823707, 3494.0436272664565],
+    [3167.370274048748, 3027.9496535141284],
+    [2868.0847125022033, 2820.6672080376225],
+    [2619.1567802205545, 2603.3969073321023]];
+
+    option = {
+        title: {
+            text: 'calinski_harabasz_score',
+            left: '35%'
+        },
+        tooltip: {
+            trigger: 'axis'
+        },
+        legend: {
+            data: ['sklearn_kmeans', 'our_kmeans'],
+            right: '5%',
+            top: '20%'
+        },
+        grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+        },
+        toolbox: {
+            feature: {
+                saveAsImage: {}
+            }
+        },
+        xAxis: {
+            data: [2,3,4,5,6,7,8,9],
+            name: 'cluster_num',
+            nameLocation:'middle',
+            nameGap:20,
+            nameTextStyle:{
+                fontWeight:500,
+                fontSize:14
+            }
+        },
+        yAxis: {
+            min: 2000,
+            name:'score',
+            nameLocation:'middle',
+            nameGap:40,
+            nameTextStyle:{
+                fontWeight:500,
+                fontSize:14
+            }
+            
+        },
+        series: [
+            {
+                name: 'sklearn_kmeans',
+                type: 'line',
+                data: data.map(function (item) {
+                    return item[0];
+                }),
+            },
+            {
+                name: 'our_kmeans',
+                type: 'line',
+                data: data.map(function (item) {
+                    return item[1];
+                }),
+            }
+        ]
+    };
+
+    option && myChart.setOption(option);
+    </script>
+</body>
+</html>
+```
+<img src="image/calinski_harabasz_score.png" alt="img2" style="zoom:70%;" />
+
+从上图可以看出我们的算法和kmeans的标准算法还是非常接近的，而且可以看出，7分类是一个比较明显的拐点，与我们交叉验证得到的结论非常相近，由此可以得出我们的聚类算法具有较好的聚类功能，并且交叉验证分析结果也相当准确。
+
+## 5 心得收获
+通过此次聚类分析的实验，我们进行较为明确的分工，学会了如何使用jupyter notebook进行数据处理与分析，上网搜集了大量聚类算法的原理以及源代码，对聚类分析也有了较深刻的理解。我们自学了sklearn.cluster库的部分内容，对标准的聚类算法有了一定的理解。我们还自学了echarts，并对得到的数据进行可视化。通过此次实验，自学能力和解决问题的能力都得到了巨大的提升。
 

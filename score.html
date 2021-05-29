@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ECharts</title>
+    <!-- 引入 echarts.js -->
+    <script src="echarts.min.js"></script>
+</head>
+<body>
+    <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+    <div id="main" style="width: 600px;height:400px;"></div>
+    <script type="text/javascript">
+    var chartDom = document.getElementById('main');
+    var myChart = echarts.init(chartDom);
+    var option;
+    var data = [[3977.9119799523473, 3425.3029936486087],
+    [4922.0241313202705, 4920.774986066661],
+    [4546.097260577083, 4527.867143048459],
+    [3946.1489689222426, 3931.8039902148103],
+    [3526.6795910823707, 3494.0436272664565],
+    [3167.370274048748, 3027.9496535141284],
+    [2868.0847125022033, 2820.6672080376225],
+    [2619.1567802205545, 2603.3969073321023]];
+
+    option = {
+        title: {
+            text: 'calinski_harabasz_score',
+            left: '35%'
+        },
+        tooltip: {
+            trigger: 'axis'
+        },
+        legend: {
+            data: ['sklearn_kmeans', 'our_kmeans'],
+            right: '5%',
+            top: '20%'
+        },
+        grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+        },
+        toolbox: {
+            feature: {
+                saveAsImage: {}
+            }
+        },
+        xAxis: {
+            data: [2,3,4,5,6,7,8,9],
+            name: 'cluster_num',
+            nameLocation:'middle',
+            nameGap:20,
+            nameTextStyle:{
+                fontWeight:500,
+                fontSize:14
+            }
+        },
+        yAxis: {
+            min: 2000,
+            name:'score',
+            nameLocation:'middle',
+            nameGap:40,
+            nameTextStyle:{
+                fontWeight:500,
+                fontSize:14
+            }
+            
+        },
+        series: [
+            {
+                name: 'sklearn_kmeans',
+                type: 'line',
+                data: data.map(function (item) {
+                    return item[0];
+                }),
+            },
+            {
+                name: 'our_kmeans',
+                type: 'line',
+                data: data.map(function (item) {
+                    return item[1];
+                }),
+            }
+        ]
+    };
+
+    option && myChart.setOption(option);
+    </script>
+</body>
+</html>
