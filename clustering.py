@@ -194,21 +194,21 @@ def clusterResultCount(clusterAssment):
 
 
 # step 1: load data
-# print("step 1: load data...")
+print("step 1: load data...")
 
 # step 2: clustering...
-# print("step 2: clustering...")
-# dataSet = mat(data.values)
-# k = 5
+print("step 2: clustering...")
+dataSet = mat(data.values)
+k = 5
 # dis_standard = 0 for euclDistance, dis_standard = 1 for manhattanDistance, dis_standard = 1 for cosineDistance
-# dis_standard = 0
-# dis_standard = 1
-# dis_standard = 2
-# centroids, clusterAssment = kmeans(dataSet, k, dis_standard)
+dis_standard = 0
+dis_standard = 1
+dis_standard = 2
+centroids, clusterAssment = kmeans(dataSet, k, dis_standard)
 
 # step 3: show the result
-# print("step 3: show the result...")
-# showCluster(dataSet, k, centroids, clusterAssment)
+print("step 3: show the result...")
+showCluster(dataSet, k, centroids, clusterAssment)
 
 dataSet = mat(data.values)
 k = 8
@@ -218,20 +218,20 @@ dis_standard = 0
 centroids, clusterAssment = kmeans(dataSet, k, dis_standard)
 clusterResultCount(clusterAssment)
 
-## kmeans + euclDistance
-# print("\nkmeans + manhattanDistance")
-# dis_standard = 1
-# centroids, clusterAssment = kmeans(dataSet, k, dis_standard)
-# clusterResultCount(clusterAssment)
+# kmeans + euclDistance
+print("\nkmeans + manhattanDistance")
+dis_standard = 1
+centroids, clusterAssment = kmeans(dataSet, k, dis_standard)
+clusterResultCount(clusterAssment)
 
-## kmeans + euclDistance
-# print("\nkmeans + cosineDistance")
-# dis_standard = 2
-# centroids, clusterAssment = kmeans(dataSet, k, dis_standard)
-# clusterResultCount(clusterAssment)
+# kmeans + euclDistance
+print("\nkmeans + cosineDistance")
+dis_standard = 2
+centroids, clusterAssment = kmeans(dataSet, k, dis_standard)
+clusterResultCount(clusterAssment)
 
-## kmedians + euclDistance
-# print("\kmedians + euclDistance")
-# dis_standard = 0
-# centroids, clusterAssment = kmedians(dataSet, k, dis_standard)
-# clusterResultCount(clusterAssment)
+# kmedians + euclDistance
+print("\kmedians + euclDistance")
+dis_standard = 0
+centroids, clusterAssment = kmedians(dataSet, k, dis_standard)
+clusterResultCount(clusterAssment)
